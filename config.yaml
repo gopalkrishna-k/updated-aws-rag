@@ -1,0 +1,22 @@
+# Model providers remain configurable. Gemini 3.6 Flash is the default for
+# Phase 2 image captioning and Phase 6 generation because Gemini 2.5 Flash is
+# unavailable to new Gemini API keys.
+embedding_model: BAAI/bge-large-en-v1.5
+llm_model: gemini-3.6-flash
+
+# Hierarchical Parent-Child Chunking settings
+parent_chunk_size: 2000
+parent_chunk_overlap: 100
+child_chunk_size: 400
+child_chunk_overlap: 50
+
+# PostgreSQL Database Configuration
+postgres_host: localhost
+postgres_port: 5432
+postgres_db: aws_rag_db
+postgres_user: postgres
+postgres_password: "Gopal@0001"
+
+vectorstore_path: vectorstore
+top_k: 5
+rerank_top_n: 5
