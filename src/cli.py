@@ -140,22 +140,23 @@ def _run_repl() -> None:
 
         if retrieved_chunks:
             print("\n" + "-" * 70)
-            print(f"RETRIEVED CHUNKS SENT TO LLM ({len(retrieved_chunks)} chunks):\n")
+            print(f"RETRIEVED PARENT CHUNKS SENT TO LLM ({len(retrieved_chunks)} parent chunks):\n")
             for i, chunk in enumerate(retrieved_chunks, start=1):
                 cid = chunk.get("id", "")
-                ctype = chunk.get("chunk_type", "")
+                ctype = chunk.get("chunk_type", "parent")
                 cat = chunk.get("category", "")
                 sname = chunk.get("service_name", "")
                 p_start = chunk.get("page_start", 0)
                 p_end = chunk.get("page_end", 0)
-                p_str = f"page {p_start}" if p_start == p_end else f"pages {p_start}-{p_end}"
+                p_str = f"page {p_start}" if (p_start and p_start == p_end) else (f"pages {p_start}-{p_end}" if p_start else "")
 
-                header_parts = [f"Chunk {i}: [{cid}]", f"Type: {ctype}"]
+                header_parts = [f"Parent Chunk {i}: [{cid}]", f"Type: {ctype}"]
                 if sname:
                     header_parts.append(f"Service: {sname}")
                 if cat:
                     header_parts.append(f"Category: {cat}")
-                header_parts.append(p_str)
+                if p_str:
+                    header_parts.append(p_str)
 
                 print(f"[{' | '.join(header_parts)}]")
                 print(chunk.get("text", "").strip())

@@ -50,23 +50,23 @@ class PostgresDenseRetriever:
         with self.conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, parent_id, text_content, source, page
+                SELECT doc_id, parent_id, text_content, category, service_name
                 FROM child_chunks
-                ORDER BY embedding <=> %s
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s;
                 """,
-                (q_vec, k),
                 (str(q_vec), k),
             )
             rows = cur.fetchall()
         docs: List[Document] = []
-        for child_id, parent_id, text, source, page in rows:
+        for child_id, parent_id, text, category, service_name in rows:
             metadata = {
-                "id": child_id,
-                "parent_id": parent_id,
-                "source": source,
-                "page": page,
+                "id": str(child_id),
+                "doc_id": str(child_id),
+                "parent_id": str(parent_id),
+                "category": category,
+                "service_name": service_name,
+                "service": service_name,
             }
             docs.append(Document(page_content=text, metadata=metadata))
         return docs

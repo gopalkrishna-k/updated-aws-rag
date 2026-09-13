@@ -251,7 +251,7 @@ class RAGChain:
 
     def __init__(
         self,
-        retriever: HybridRetriever | None = None,
+        retriever: Any | None = None,
         config: AppConfig | None = None,
     ):
         if config is None:
@@ -259,7 +259,17 @@ class RAGChain:
         self.config = config
 
         if retriever is None:
-            retriever = HybridRetriever(config=config)
+            try:
+                from src.retrieval.retrieval_service import RetrievalService
+                self.retrieval_service = RetrievalService(config=config)
+            except Exception as exc:
+                logger.warning("Could not initialize RetrievalService (%s); falling back to HybridRetriever", exc)
+                self.retrieval_service = None
+                from src.retrieval.postgres_retriever import make_retriever
+                retriever = make_retriever()
+        else:
+            self.retrieval_service = None
+
         self.retriever = retriever
 
         api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -288,11 +298,31 @@ class RAGChain:
         """Retrieve context and generate grounded answer with citations."""
         t_total_start = time.perf_counter()
 
-        # 1. Retrieve (with per-stage timing from the retriever)
-        docs, retrieval_timings = self.retriever._retrieve_timed(query, k=k)
+        # 1. Retrieve context
+        if self.retrieval_service is not None:
+            t_ret_start = time.perf_counter()
+            ret_res = self.retrieval_service.retrieve(query, top_k=k or 5)
+            retrieval_s = time.perf_counter() - t_ret_start
+            rerank_s = 0.0
 
-        # 2. Format context
-        formatted_context = format_context_docs(docs)
+            formatted_context = ret_res["formatted_context"]
+            resolved_parents = ret_res["resolved_parents"]
+            docs = [
+                Document(
+                    page_content=parent["text_content"],
+                    metadata={
+                        "id": parent["doc_id"],
+                        "category": parent.get("category", "General"),
+                        "service_name": parent.get("service_name", "General"),
+                        "chunk_type": "parent",
+                    },
+                )
+                for parent in resolved_parents
+            ]
+            retrieval_timings = {"retrieval_s": retrieval_s, "rerank_s": rerank_s}
+        else:
+            docs, retrieval_timings = self.retriever._retrieve_timed(query, k=k)
+            formatted_context = format_context_docs(docs)
         context_chars = len(formatted_context)
         context_tokens_approx = max(1, context_chars // 4)
 

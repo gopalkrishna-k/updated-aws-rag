@@ -1,7 +1,8 @@
 """chunking.py — Refactored Hierarchical Two-Tier Chunking.
 
 Transforms Markdown text into a two-level hierarchy of Parent Chunks (Context Payload)
-and Child Chunks (Search Payload) using MarkdownHeaderTextSplitter and RecursiveCharacterTextSplitter.
+and Child Chunks (Search Payload) using MarkdownHeaderTextSplitter (H1-H5) and RecursiveCharacterTextSplitter.
+Includes atomic Markdown table protection, pre-processing cleanup, and metadata consolidation.
 NO vector embeddings or database storage are performed.
 """
 
@@ -35,48 +36,132 @@ CHILD_OVERLAP = 120
 CHILD_SEPARATORS = ["\n\n", "\n|", "\n- ", "\n", ". ", " "]
 
 
+def clean_markdown_text(raw_text: str) -> str:
+    """Pre-process and clean raw Markdown text by removing page markers, stray headers/footers, and <u> tags."""
+    # 1. Strip HTML tags like <u> and </u> from text
+    text = re.sub(r"<\/?u>", "", raw_text)
+
+    # 2. Strip HTML page comment markers (e.g. <!-- PAGE_11 -->)
+    text = re.sub(r"<!--\s*PAGE_\d+\s*-->", "", text)
+
+    # 3. Filter out stray running headers/footers line-by-line
+    lines = text.splitlines()
+    cleaned_lines = []
+    for line in lines:
+        stripped = line.strip()
+        # Skip recurring header/footer titles
+        if stripped in (
+            "Overview of Amazon Web Services",
+            "AWS Whitepaper",
+            "Overview of Amazon Web Services AWS Whitepaper",
+            "Overview of Amazon Web Services  AWS Whitepaper",
+        ):
+            continue
+        # Skip copyright disclaimers
+        if re.search(r"Copyright\s+©\s+\d{4}.*Amazon Web Services", stripped, re.IGNORECASE):
+            continue
+        if stripped.startswith("Copyright ©") or stripped.startswith("©"):
+            continue
+        # Skip standalone page numbers (e.g. "14")
+        if re.fullmatch(r"\d+", stripped):
+            continue
+        cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines)
+
+
+def clean_header_str(val: str | None) -> str:
+    """Sanitize header text by stripping Markdown bold (**), italics (* or _), and HTML tags (<u>)."""
+    if not val:
+        return ""
+    cleaned = re.sub(r"<\/?u>", "", val)
+    cleaned = re.sub(r"[\*_]{1,3}", "", cleaned)
+    return cleaned.strip()
+
+
 def extract_header_metadata(metadata: Dict[str, Any]) -> Tuple[str, str, str]:
-    """Extract category (Header 2), service_name (Header 3), and header_path."""
-    category = metadata.get("Header 2") or metadata.get("Category") or ""
-    service_name = metadata.get("Header 3") or metadata.get("Service") or metadata.get("Header 4") or ""
-    h1 = metadata.get("Header 1") or ""
+    """Extract clean category (H3/H2), service_name (H4/H5 or fallback to H3/H2), and header_path."""
+    h1 = clean_header_str(metadata.get("title") or metadata.get("Header 1"))
+    h2 = clean_header_str(metadata.get("section") or metadata.get("Header 2"))
+    h3 = clean_header_str(metadata.get("category") or metadata.get("Category") or metadata.get("Header 3"))
+    h4 = clean_header_str(metadata.get("service_name") or metadata.get("Service") or metadata.get("Header 4"))
+    h5 = clean_header_str(metadata.get("subservice_name") or metadata.get("Header 5"))
 
-    category = category.strip()
-    service_name = service_name.strip()
+    # Category: H3 (or H2 if under section without H3)
+    category = h3 if h3 else (h2 if h2 else "General")
 
+    # Service name: H4 (or H5) if present; fallback to active category/section if no H4/H5 exists
+    if h4:
+        service_name = f"{h4} > {h5}" if h5 else h4
+    elif h5:
+        service_name = h5
+    else:
+        service_name = category
+
+    # Construct clean breadcrumb header_path (e.g. "Analytics > Amazon Athena")
     path_parts = []
-    if category:
+    if category and category != "General":
         path_parts.append(category)
-    if service_name:
+    if service_name and service_name != category:
         path_parts.append(service_name)
-    if not path_parts and h1.strip():
-        path_parts.append(h1.strip())
+
+    if not path_parts:
+        if h2:
+            path_parts.append(h2)
+        elif h1:
+            path_parts.append(h1)
 
     header_path = " > ".join(path_parts) if path_parts else "General"
     return category, service_name, header_path
 
 
+def preserve_markdown_tables(parent_text: str, child_texts: List[str]) -> List[str]:
+    """Ensure child chunks containing Markdown table rows retain their table header rows atomically."""
+    table_header_match = re.search(r"(\|[^\n]+\|\n\|\s*[-:]+[-|\s:]*\|)", parent_text)
+    if not table_header_match:
+        return child_texts
+
+    table_header = table_header_match.group(1)
+    refined_children: List[str] = []
+
+    for child in child_texts:
+        lines = child.strip().splitlines()
+        table_rows = [l for l in lines if l.strip().startswith("|") and l.strip().endswith("|")]
+        if table_rows:
+            has_header = any(re.match(r"^\|\s*[-:]+[-|\s:]*\|$", l.strip()) for l in lines)
+            if not has_header:
+                child = f"{table_header}\n{child}"
+        refined_children.append(child)
+
+    return refined_children
+
+
 def generate_hierarchical_chunks(
     markdown_content: str,
-    source_path: str = "data/processed/aws-overview.md",
+    source_path: str = "aws-overview.md",
     parent_max_threshold: int = PARENT_MAX_THRESHOLD,
     parent_size: int = PARENT_SIZE,
     parent_overlap: int = PARENT_OVERLAP,
     child_size: int = CHILD_SIZE,
     child_overlap: int = CHILD_OVERLAP,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Generate refined Parent Chunks (Context Payload) and Child Chunks (Search Payload) with lineage linking."""
-    logger.info("Parsing Markdown text with MarkdownHeaderTextSplitter (#, ##, ###)...")
+    """Generate Parent Chunks and Child Chunks with H1-H5 heading support and atomic table protection."""
+    logger.info("Pre-processing Markdown text (cleaning page markers, noise & HTML tags)...")
+    cleaned_markdown = clean_markdown_text(markdown_content)
+
+    logger.info("Parsing Markdown text with MarkdownHeaderTextSplitter (H1-H5)...")
     headers_to_split_on = [
-        ("#", "Header 1"),
-        ("##", "Header 2"),
-        ("###", "Header 3"),
+        ("#", "title"),
+        ("##", "section"),
+        ("###", "category"),
+        ("####", "service_name"),
+        ("#####", "subservice_name"),
     ]
     markdown_splitter = MarkdownHeaderTextSplitter(
         headers_to_split_on=headers_to_split_on,
         strip_headers=False,
     )
-    header_docs = markdown_splitter.split_text(markdown_content)
+    header_docs = markdown_splitter.split_text(cleaned_markdown)
 
     # Fallback splitter for parent header blocks exceeding 2,500 characters
     parent_text_splitter = RecursiveCharacterTextSplitter(
@@ -103,17 +188,8 @@ def generate_hierarchical_chunks(
     parent_chunks: List[Dict[str, Any]] = []
     child_chunks: List[Dict[str, Any]] = []
 
-    current_page = 1  # Track page state across chunks
-
     for doc in raw_parent_docs:
-        text = doc.page_content
-
-        page_markers = re.findall(r"<!--\s*PAGE_(\d+)\s*-->", text)
-        if page_markers:
-            current_page = int(page_markers[0])
-        chunk_page = current_page
-
-        clean_text = re.sub(r"<!--\s*PAGE_\d+\s*-->", "", text).strip()
+        clean_text = doc.page_content.strip()
         if not clean_text:
             continue
 
@@ -123,18 +199,18 @@ def generate_hierarchical_chunks(
         parent_obj = {
             "doc_id": parent_doc_id,
             "id": parent_doc_id,  # backward compatibility
-            "source": source_path,
+            "source": Path(source_path).name,
             "category": category,
             "service_name": service_name,
-            "service": service_name,  # backward compatibility
+            "service": service_name,  # consolidated mirror
             "header_path": header_path,
             "chunk_type": "parent",
             "text_content": clean_text,
-            "page": chunk_page,
         }
         parent_chunks.append(parent_obj)
 
-        sub_child_texts = child_text_splitter.split_text(clean_text)
+        raw_sub_child_texts = child_text_splitter.split_text(clean_text)
+        sub_child_texts = preserve_markdown_tables(clean_text, raw_sub_child_texts)
 
         for child_text in sub_child_texts:
             child_text_clean = child_text.strip()
@@ -149,14 +225,13 @@ def generate_hierarchical_chunks(
                 "doc_id": child_doc_id,
                 "id": child_doc_id,  # backward compatibility
                 "parent_id": parent_doc_id,
-                "source": source_path,
+                "source": Path(source_path).name,
                 "category": category,
                 "service_name": service_name,
-                "service": service_name,  # backward compatibility
+                "service": service_name,  # consolidated mirror
                 "header_path": header_path,
                 "chunk_type": "child",
                 "text_content": prepended_text,
-                "page": chunk_page,
             }
             child_chunks.append(child_obj)
 
@@ -173,25 +248,29 @@ def print_chunk_summary(parents: List[Dict[str, Any]], children: List[Dict[str, 
     print(f"Total Child Chunks  (Search Payload):  {len(children)}")
 
     if parents:
-        print("\n--- SAMPLE PARENT CHUNK ---")
-        sample_p = parents[0]
-        print(f"doc_id:      {sample_p['doc_id']}")
-        print(f"header_path: {sample_p['header_path']}")
-        print(f"category:    {sample_p['category']}")
-        print(f"service:     {sample_p['service_name']}")
-        print(f"chunk_type:  {sample_p['chunk_type']}")
-        print(f"text_content preview:\n{sample_p['text_content'][:200]}...")
+        print("\n--- SAMPLE PARENT CHUNKS ---")
+        for sample_p in parents[:3]:
+            print(f"  doc_id:       {sample_p['doc_id']}")
+            print(f"  header_path:  {sample_p['header_path']}")
+            print(f"  category:     {sample_p['category']}")
+            print(f"  service_name: {sample_p['service_name']}")
+            print(f"  service:      {sample_p['service']}")
+            print(f"  chunk_type:   {sample_p['chunk_type']}")
+            print(f"  text preview: {sample_p['text_content'][:150]}...")
+            print()
 
     if children:
-        print("\n--- SAMPLE CHILD CHUNK (WITH CONTEXT PREPENDED) ---")
-        sample_c = children[0]
-        print(f"doc_id:      {sample_c['doc_id']}")
-        print(f"parent_id:   {sample_c['parent_id']}")
-        print(f"header_path: {sample_c['header_path']}")
-        print(f"category:    {sample_c['category']}")
-        print(f"service:     {sample_c['service_name']}")
-        print(f"chunk_type:  {sample_c['chunk_type']}")
-        print(f"text_content preview:\n{sample_c['text_content'][:250]}...")
+        print("--- SAMPLE CHILD CHUNKS (WITH CONTEXT PREPENDED) ---")
+        for sample_c in children[:3]:
+            print(f"  doc_id:       {sample_c['doc_id']}")
+            print(f"  parent_id:    {sample_c['parent_id']}")
+            print(f"  header_path:  {sample_c['header_path']}")
+            print(f"  category:     {sample_c['category']}")
+            print(f"  service_name: {sample_c['service_name']}")
+            print(f"  service:      {sample_c['service']}")
+            print(f"  chunk_type:   {sample_c['chunk_type']}")
+            print(f"  text preview: {sample_c['text_content'][:180]}...")
+            print()
     print("=" * 70 + "\n")
 
 
@@ -227,5 +306,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 
 
