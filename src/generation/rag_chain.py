@@ -272,11 +272,8 @@ class RAGChain:
 
         self.retriever = retriever
 
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "GEMINI_API_KEY not found in environment. Please set GEMINI_API_KEY in .env."
-            )
+        from backend.utils.key_rotator import key_rotator
+        api_key = key_rotator.get_next_key("gemini")
 
         self.llm = ChatGoogleGenerativeAI(
             model=config.llm_model,
@@ -336,10 +333,17 @@ class RAGChain:
                 "question": query,
             }
         )
-        raw_response = self.llm.invoke(
-            prompt_val,
-            config={"callbacks": [diag_cb]},
-        )
+
+        def _invoke_llm(api_key: str):
+            llm = ChatGoogleGenerativeAI(
+                model=self.config.llm_model,
+                google_api_key=api_key,
+                temperature=0.0,
+            )
+            return llm.invoke(prompt_val, config={"callbacks": [diag_cb]})
+
+        from backend.utils.key_rotator import key_rotator
+        raw_response = key_rotator.execute_with_retry(_invoke_llm, provider="gemini")
         generation_s = time.perf_counter() - t_gen_start
         parsed_output = self.parser.invoke(raw_response)
         answer = _clean_llm_response_text(parsed_output)

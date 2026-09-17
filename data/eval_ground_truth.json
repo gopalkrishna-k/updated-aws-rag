@@ -1,0 +1,163 @@
+[
+  {
+    "question_id": "Q01",
+    "question": "What is Amazon Athena and how does it integrate with AWS Glue?",
+    "ground_truth_answer": "Amazon Athena is an interactive, serverless query service that allows you to analyze data in Amazon S3 using standard SQL. It is out-of-the-box integrated with the AWS Glue Data Catalog, allowing you to create a unified metadata repository across various services, crawl data sources to discover schemas, populate table definitions, and maintain schema versioning.",
+    "expected_service": "Amazon Athena",
+    "category": "Analytics",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q02",
+    "question": "Compare Amazon RDS vs Amazon DynamoDB in terms of database type and scaling.",
+    "ground_truth_answer": "Amazon RDS is a managed relational database service supporting traditional engines (like MySQL, PostgreSQL, Oracle), providing cost-efficient and resizable capacity. In contrast, Amazon DynamoDB is a fully managed, multi-Region NoSQL key-value and document database designed for single-digit millisecond performance at any scale, handling over 10 trillion requests per day.",
+    "expected_service": "Amazon Relational Database Service",
+    "category": "Databases",
+    "query_type": "comparison"
+  },
+  {
+    "question_id": "Q03",
+    "question": "What are C7g instances in Amazon EC2 and what processor powers them?",
+    "ground_truth_answer": "C7g instances are Amazon EC2 instance types powered by the latest generation AWS Graviton3 processors. They provide the best price performance in Amazon EC2 for compute-intensive workloads such as high performance computing (HPC), batch processing, electronic design automation (EDA), gaming, and CPU-based ML inference.",
+    "expected_service": "Amazon EC2",
+    "category": "Compute",
+    "query_type": "technical_param"
+  },
+  {
+    "question_id": "Q04",
+    "question": "What is the primary function of AWS Lambda?",
+    "ground_truth_answer": "AWS Lambda is a serverless compute service that lets you run code without provisioning or managing servers. You pay only for the compute time consumed with zero administration, and code can be set up to run automatically from other AWS services or called directly from web or mobile apps.",
+    "expected_service": "AWS Lambda",
+    "category": "Compute",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q05",
+    "question": "What is Amazon S3 and what durability level is it designed for?",
+    "ground_truth_answer": "Amazon Simple Storage Service (Amazon S3) is an object storage service offering industry-leading scalability, data availability, security, and performance. It is designed for 99.999999999% (11 9s) of durability and stores data for millions of applications worldwide.",
+    "expected_service": "Amazon Simple Storage Service",
+    "category": "Storage",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q06",
+    "question": "What is the difference between Amazon SQS Standard queues and FIFO queues?",
+    "ground_truth_answer": "Amazon SQS offers two types of message queues. Standard queues offer maximum throughput, best-effort ordering, and at-least-once delivery. Amazon SQS FIFO queues are designed to guarantee that messages are processed exactly once, in the exact order that they are sent.",
+    "expected_service": "Amazon Simple Queue Service",
+    "category": "Application integration",
+    "query_type": "technical_param"
+  },
+  {
+    "question_id": "Q07",
+    "question": "What is AWS Fargate and how does it relate to Amazon ECS?",
+    "ground_truth_answer": "AWS Fargate is a serverless compute engine for Amazon ECS that allows you to run containers without having to provision, configure, or scale clusters of virtual machines. Amazon ECS supports both Fargate launch type (serverless) and EC2 launch type (server-level granular control).",
+    "expected_service": "AWS Fargate",
+    "category": "Compute",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q08",
+    "question": "What is AWS CloudTrail used for in security and governance?",
+    "ground_truth_answer": "AWS CloudTrail is a web service that records AWS API calls for your account and delivers log files. Recorded information includes the identity of the API caller, call time, source IP address, request parameters, and response elements, enabling security analysis, resource change tracking, and compliance auditing.",
+    "expected_service": "AWS CloudTrail",
+    "category": "Management and governance",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q09",
+    "question": "What is AWS Glue Data Quality and what features does it offer?",
+    "ground_truth_answer": "AWS Glue Data Quality measures and monitors the data quality of Amazon S3 based data lakes, data warehouses, and other repositories. It automatically computes statistics, recommends quality rules, and alerts when missing, stale, or bad data is detected.",
+    "expected_service": "AWS Glue",
+    "category": "Analytics",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q10",
+    "question": "What is Amazon Bedrock and what foundation models does it provide?",
+    "ground_truth_answer": "Amazon Bedrock is a fully managed serverless service that makes foundational models (FMs) available through an API. It provides models from leading AI companies such as AI21 Labs, Anthropic, Cohere, Meta, Mistral AI, Stability AI, and Amazon Nova models.",
+    "expected_service": "Amazon Bedrock",
+    "category": "Machine Learning (ML) and Artificial Intelligence (AI)",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q11",
+    "question": "What is the Shared Responsibility Model in AWS Security?",
+    "ground_truth_answer": "The AWS Cloud enables a shared responsibility model: while AWS manages security OF the cloud (underlying infrastructure, data centers, hardware), the customer is responsible for security IN the cloud (content, platform, applications, access control, and operating system configurations).",
+    "expected_service": "Security",
+    "category": "Security, identity, and compliance",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q12",
+    "question": "What is AWS Transit Gateway and why is it used over VPC Peering?",
+    "ground_truth_answer": "AWS Transit Gateway is a central hub that connects Amazon VPCs and on-premises networks to a single gateway. It replaces complex, operationally costly point-to-point VPC peering networks with a simplified hub-and-spoke model.",
+    "expected_service": "AWS Transit Gateway",
+    "category": "Networking and content delivery",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q13",
+    "question": "Compare AWS Snowball vs AWS Snowball Edge.",
+    "ground_truth_answer": "AWS Snowball is a compact, 4.5 lb ruggedized edge storage device with 8 TB of usable storage designed for tight or portable spaces. AWS Snowball Edge is a larger edge computing, data migration, and storage device offering up to 210 TB of storage, local compute (EC2/Lambda), and optional GPU accelerators.",
+    "expected_service": "AWS Snow Family",
+    "category": "Migration and transfer",
+    "query_type": "comparison"
+  },
+  {
+    "question_id": "Q14",
+    "question": "What is Amazon ElastiCache and what open-source engines does it support?",
+    "ground_truth_answer": "Amazon ElastiCache is a web service that deploys, operates, and scales fast, managed in-memory caches in the cloud. It supports two open-source caching engines: Redis (Redis OSS) and Memcached.",
+    "expected_service": "Amazon ElastiCache",
+    "category": "Databases",
+    "query_type": "technical_param"
+  },
+  {
+    "question_id": "Q15",
+    "question": "What is Amazon Q Developer?",
+    "ground_truth_answer": "Amazon Q Developer (formerly Amazon CodeWhisperer) is a generative AI assistant that assists developers and IT professionals with coding, testing, upgrading applications, diagnosing errors, security scanning, and optimizing AWS resources using advanced planning and reasoning capabilities.",
+    "expected_service": "Amazon Q Developer",
+    "category": "Developer tools",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q16",
+    "question": "What is AWS Lake Formation?",
+    "ground_truth_answer": "AWS Lake Formation is a service that simplifies setting up a secure data lake in days. It automates collecting, cataloging, moving, cleaning, classifying, and securing data from databases and object storage into an Amazon S3 data lake.",
+    "expected_service": "AWS Lake Formation",
+    "category": "Analytics",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q17",
+    "question": "What is Amazon Route 53 and what routing types does it support?",
+    "ground_truth_answer": "Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service. It translates human-readable domain names into IP addresses and supports advanced routing types including latency-based routing, Geo DNS, and weighted round robin combined with DNS Failover.",
+    "expected_service": "Amazon Route 53",
+    "category": "Networking and content delivery",
+    "query_type": "technical_param"
+  },
+  {
+    "question_id": "Q18",
+    "question": "What is AWS Secrets Manager?",
+    "ground_truth_answer": "AWS Secrets Manager helps protect secrets needed to access applications, services, and IT resources. It enables you to rotate, manage, and retrieve database credentials, API keys, and OAuth tokens using fine-grained permissions.",
+    "expected_service": "AWS Secrets Manager",
+    "category": "Security, identity, and compliance",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q19",
+    "question": "What is AWS Auto Scaling?",
+    "ground_truth_answer": "AWS Auto Scaling monitors applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest cost across multiple services, including EC2 instances, ECS tasks, DynamoDB tables, and Aurora Replicas.",
+    "expected_service": "AWS Auto Scaling",
+    "category": "Management and governance",
+    "query_type": "single_service"
+  },
+  {
+    "question_id": "Q20",
+    "question": "What is AWS Shield Standard vs AWS Shield Advanced?",
+    "ground_truth_answer": "AWS Shield Standard provides automatic inline DDoS protection against common infrastructure (Layer 3 and 4) attacks at no extra charge. AWS Shield Advanced provides higher protection against large, sophisticated attacks on EC2, ELB, CloudFront, and Route 53, with 24x7 access to the AWS DDoS Response Team (DRT) and DDoS cost protection.",
+    "expected_service": "AWS Shield",
+    "category": "Security, identity, and compliance",
+    "query_type": "comparison"
+  }
+]
+

@@ -1,0 +1,57 @@
+[
+  {
+    "type": "factoid",
+    "question": "What is Amazon Elastic Container Service (Amazon ECS)?",
+    "ground_truth_answer": "Amazon Elastic Container Service (Amazon ECS) is a highly scalable, high-performance container orchestration service that supports Docker containers and allows you to easily run and scale containerized applications on AWS."
+  },
+  {
+    "type": "complex",
+    "question": "What operational burdens does Amazon ECS eliminate for users, and what actions can be performed using simple API calls once applications are running?",
+    "ground_truth_answer": "Amazon ECS eliminates the need to install and operate your own container orchestration software, manage and scale a cluster of virtual machines (VMs), or schedule containers on those VMs. With simple API calls, you can launch and stop Docker-enabled applications, query the complete state of your application, and access familiar features such as IAM roles, security groups, load balancers, Amazon CloudWatch Events, CloudFormation templates, and AWS CloudTrail logs."
+  },
+  {
+    "type": "factoid",
+    "question": "What is the core purpose of Amazon Elastic Kubernetes Service (Amazon EKS)?",
+    "ground_truth_answer": "Amazon EKS makes it easy to deploy, manage, and scale containerized applications using Kubernetes on AWS."
+  },
+  {
+    "type": "complex",
+    "question": "How does Amazon EKS prevent a single point of failure within its Kubernetes management infrastructure, and what ensures compatibility with existing partner tools?",
+    "ground_truth_answer": "Amazon EKS prevents a single point of failure by running the Kubernetes management infrastructure across multiple AWS Availability Zones. It ensures compatibility with existing tooling and plugins from partners and the Kubernetes community because it is certified Kubernetes conformant."
+  },
+  {
+    "type": "factoid",
+    "question": "What is the designed data durability percentage for Amazon S3?",
+    "ground_truth_answer": "Amazon S3 is designed for 99.999999999% (11 9s) of durability."
+  },
+  {
+    "type": "complex",
+    "question": "How are Amazon S3 storage classes designed to accommodate different workload requirements?",
+    "ground_truth_answer": "Amazon S3 storage classes are purpose-built to provide the lowest cost storage for different access patterns, allowing users to choose based on data access, resiliency, and cost requirements. They are ideal for virtually any use case, including those with demanding performance needs, data residency requirements, unknown or changing access patterns, or archival storage."
+  },
+  {
+    "type": "factoid",
+    "question": "What type of storage does Amazon Elastic Block Store (Amazon EBS) provide for Amazon EC2 instances?",
+    "ground_truth_answer": "Amazon Elastic Block Store (Amazon EBS) provides persistent block storage volumes for use with Amazon EC2 instances in the AWS Cloud."
+  },
+  {
+    "type": "complex",
+    "question": "How does Amazon EBS protect workloads from component failure while maintaining performance and scalability?",
+    "ground_truth_answer": "Amazon EBS protects workloads from component failure by automatically replicating each volume within its Availability Zone, offering high availability and durability. Additionally, it maintains consistent and low-latency performance to run workloads, and allows users to scale their usage up or down within minutes while paying only for what they provision."
+  },
+  {
+    "type": "factoid",
+    "question": "What is the primary purpose of Amazon Elastic File System (Amazon EFS)?",
+    "ground_truth_answer": "Amazon Elastic File System (Amazon EFS) provides a simple, scalable, elastic file system for Linux-based workloads for use with AWS Cloud services and on-premises resources."
+  },
+  {
+    "type": "complex",
+    "question": "How does Amazon EFS achieve high availability, durability, and shared access across multiple environments and compute instances?",
+    "ground_truth_answer": "Amazon EFS is a regional service that stores data within and across multiple Availability Zones (AZs) to ensure high availability and durability. It provides massively parallel shared access to thousands of Amazon EC2 instances, allowing applications to achieve high levels of aggregate throughput and IOPS with consistent low latencies. Additionally, it enables file sharing between thousands of Amazon EC2 instances and on-premises servers by providing access through a standard file system interface, with on-premises connections supported via AWS Direct Connect or Site-to-Site VPN."
+  },
+  {
+    "type": "factoid",
+    "question": "What are the six familiar database engines available with Amazon RDS?",
+    "ground_truth_answer": "The six familiar database engines available with Amazon RDS are MySQL, MariaDB, PostgreSQL, Oracle Database, Microsoft SQL Server, and Amazon RDS on AWS Outposts."
+  }
+]

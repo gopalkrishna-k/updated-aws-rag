@@ -176,9 +176,6 @@ def _run_repl() -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point."""
-    # Use the factory to automatically select the PostgreSQL‑backed retriever when configured
-    from .retrieval import make_retriever
-    retriever = make_retriever()
     parser = build_parser()
     args = parser.parse_args(argv)
 
