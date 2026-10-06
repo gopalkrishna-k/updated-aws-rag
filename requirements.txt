@@ -11,3 +11,5 @@ pymupdf4llm
 psycopg2-binary
 pgvector
 PyYAML
+fastapi
+uvicorn

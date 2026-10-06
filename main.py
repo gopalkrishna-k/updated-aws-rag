@@ -19,6 +19,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+# Shim must come BEFORE any sentence_transformers / retrieval imports
+import datasets_shim  # noqa: F401, E402
+
 from backend.services.eval_service import evaluate_batch_dataset, evaluate_single_query, load_ground_truth_dataset
 from src.cli import main as cli_main
 from src.generation.rag_chain import RAGChain
